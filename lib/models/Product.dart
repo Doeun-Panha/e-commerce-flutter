@@ -12,4 +12,9 @@ class Product {
         price: json['price'].toDouble(),
     );
   }
+
+  Map<String, dynamic> toJson()=>{
+    'name': name,
+    'price': price,
+  };
 }

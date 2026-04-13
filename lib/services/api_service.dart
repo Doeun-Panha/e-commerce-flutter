@@ -17,12 +17,18 @@ class ApiService {
     }
   }
 
-  Future<void> addProduct(Product product) async{
-    await http.post(
+  Future<void> addProduct(Product product) async {
+    final response = await http.post(
       Uri.parse(baseUrl),
       headers: {"Content-Type": "application/json"},
       body: json.encode(product.toJson()),
     );
+
+    // If the status isn't 200 or 201, it failed!
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      print("Backend Error: ${response.body}");
+      throw Exception('Failed to save: ${response.reasonPhrase}');
+    }
   }
 
   Future<void> updateProduct(Product product) async {

@@ -1,7 +1,10 @@
-import 'package:ecommerce/views/product_form_screen.dart';
+import 'package:flutter/foundation.dart';
+
+import 'product_form_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:ecommerce/models/Product.dart';
-import 'package:ecommerce/services/api_service.dart';
+import '../models/Product.dart';
+import '../providers/product_provider.dart';
+import 'package:provider/provider.dart';
 
 class ProductListScreen extends StatefulWidget{
   const ProductListScreen({super.key});
@@ -11,76 +14,21 @@ class ProductListScreen extends StatefulWidget{
 }
 
 class _ProductListScreenState extends State<ProductListScreen>{
-  final ApiService _apiService=ApiService();
-  late Future<List<Product>> _productsFuture;
-  List<Product> _allProducts = [];
-  List<Product> _filteredProducts = [];
   final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = "";
 
   @override
   void initState(){
     super.initState();
-    _refreshProducts();
-    _searchController.addListener(_onSearchChanged);
+    _searchController.addListener((){
+      setState(() => _searchQuery=_searchController.text);
+    });
   }
 
   @override
   void dispose(){
     _searchController.dispose();
     super.dispose();
-  }
-
-  void _refreshProducts(){
-    setState(() {
-      _productsFuture=_apiService.getProducts();
-    });
-  }
-
-  void _onSearchChanged(){
-    setState(() {
-      _filteredProducts=_allProducts
-          .where((product)=>product.name
-            .toLowerCase()
-            .contains(_searchController.text.toLowerCase()))
-          .toList();
-    });
-  }
-
-  Future<void> _deleteProduct(int id) async{
-    final confirmed = await showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Confirm Delete'),
-          content: const Text('Are you sure you want to delete this product?'),
-          actions: [
-            TextButton(
-                onPressed: ()=>Navigator.pop(context,false),
-                child: const Text('Cancel'),
-            ),
-            TextButton(
-                onPressed: ()=>Navigator.pop(context,true),
-                child: const Text(
-                  'Delete',
-                  style: TextStyle(color: Colors.red),
-                )
-            )
-          ],
-        )
-    );
-
-    if(confirmed==true){
-      try{
-        await _apiService.deleteProduct(id);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content:Text('Product deleted successfully'))
-        );
-        _refreshProducts();
-      }catch(e){
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error deleteing product:$e'))
-        );
-      }
-    }
   }
 
   @override
@@ -93,172 +41,123 @@ class _ProductListScreenState extends State<ProductListScreen>{
       ),
       body: Column(
         children: [
-          if (_allProducts.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-              child: Row(
-                children: [
-                  _buildSummaryCard(
-                      "Total Items",
-                      _allProducts.length.toString(),
-                      Colors.blue
-                  ),
-                  const SizedBox(width: 12),
-                  _buildSummaryCard(
-                      "Low Stock",
-                      _allProducts.where((p) => p.stockQuantity < 5).length.toString(),
-                      Colors.orange
-                  ),
-                ],
-              ),
-            ),
+          //1. Dashboard summary (Listens to Provider)
+          Consumer<ProductProvider>(
+            builder: (context, provider, child){
+              return Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    _buildSummaryCard("Total Items", provider.totalItems.toString(), Colors.blue),
+                    const SizedBox(width: 12),
+                    _buildSummaryCard("Low Stock", provider.lowStockCount.toString(), Colors.orange),
+                  ],
+                ),
+              );
+            },
+          ),
+
+          //2. Search Bar
           Padding(
-            padding: const EdgeInsetsGeometry.all(16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search products...',
                 prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 filled: true,
                 fillColor: Colors.grey[100],
               ),
             ),
           ),
+
+          //3. The Product List (Listens to Provider)
           Expanded(
-            child: FutureBuilder<List<Product>>(
-              future: _productsFuture,
-              builder: (context, snapshot){
-                if(snapshot.connectionState==ConnectionState.waiting){
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }else if(snapshot.hasError){
-                  return Center(
-                    child: Text('Error: ${snapshot.error}'),
-                  );
-                }else if(!snapshot.hasData||snapshot.data!.isEmpty){
-                  return const Center(
-                    child: Text('No products found.'),
-                  );
-                }
+            child: Consumer<ProductProvider>(
+              builder: (context, provider,child){
+                if(provider.isLoading)
+                  return const Center(child: CircularProgressIndicator());
 
-                _allProducts=snapshot.data!;
+                final filteredList = provider.products
+                  .where((p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+                  .toList();
 
-                if(_searchController.text.isEmpty){
-                  _filteredProducts=_allProducts;
+                if(filteredList.isEmpty) {
+                  return const Center(child: Text('No products founds'));
                 }
 
                 return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: _filteredProducts.length,
+                  padding: const EdgeInsets.all(16),
+                  itemCount: filteredList.length,
                   itemBuilder: (context, index){
-                    final product = _filteredProducts[index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom:12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadiusDirectional.circular(15),
-                      ),
-                      elevation: 2,
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(12),
-                        leading: Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            image: DecorationImage(
-                              image: NetworkImage(product.imageUrl.isNotEmpty
-                                  ? product.imageUrl
-                                  : 'https://via.placeholder.com/150'),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        title: Text(
-                          product.name,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('\$${product.price.toStringAsFixed(2)}'),
-                            const SizedBox(height: 4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: product.stockQuantity < 5
-                                    ? Colors.red.withOpacity(0.1)
-                                    : Colors.green.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                'In Stock: ${product.stockQuantity}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: product.stockQuantity < 5 ? Colors.red : Colors.green[800],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(
-                                Icons.edit,
-                                color: Colors.blue,),
-                              onPressed: ()async{
-                                final result = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ProductFormScreen(product: product,)
-                                  )
-                                );
-
-                                if(result==true){
-                                  _refreshProducts();
-                                }
-                              }
-                            ),
-                            IconButton(
-                                onPressed: ()=>_deleteProduct(product.id),
-                                icon: const Icon(Icons.delete, color: Colors.red)
-                            )
-                          ],
-                        ),
-                      ),
-                    );
+                    final product=filteredList[index];
+                    return _buildProductCard(context, product, provider);
                   },
                 );
               },
-            )
-          )
+            ),
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async{
-          final result=await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context)=> const ProductFormScreen(),
-            )
-          );
-
-          if(result==true){
-            _refreshProducts();
-          }
-        },
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ProductFormScreen())
+        ),
         label: const Text('Add Product'),
         icon: const Icon(Icons.add),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Colors.white,
       ),
     );
+  }
+
+  Widget _buildProductCard(BuildContext context, Product product, ProductProvider provider){
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      clipBehavior: Clip.antiAlias, // Ensures the InkWell ripple matches card corners
+      child: InkWell(
+        onTap: ()=>Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ProductFormScreen(product: product)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  _isValidUrl(product.imageUrl) ? product.imageUrl : 'https://via.placeholder.com/150',
+                  width: 70, height: 70, fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.image, size: 70),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(product.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),),
+                    const SizedBox(height: 4,),
+                    Text('\$${product.price}', style: const TextStyle(color: Colors.blueGrey),),
+                    Text('Stock: ${product.stockQuantity}',
+                        style: TextStyle(color: product.stockQuantity <5 ? Colors.red : Colors.green)),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: Colors.grey,),
+            ],
+          ),
+        ),
+      )
+    );
+  }
+
+  bool _isValidUrl(String? url) {
+    if (url == null || url.isEmpty) return false;
+    final uri = Uri.tryParse(url);
+    return uri != null && uri.hasAbsolutePath && (uri.isScheme('http') || uri.isScheme('https'));
   }
 
   Widget _buildSummaryCard(String title, String value, Color color) {

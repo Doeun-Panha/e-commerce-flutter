@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:ecommerce/models/Product.dart';
 import 'package:provider/provider.dart';
 import '../providers/product_provider.dart';
+import '../utils/app_theme.dart';
+import '../utils/validators.dart';
+import '../widgets/product_input_field.dart';
 
 class ProductFormScreen extends StatefulWidget {
   final Product? product;
@@ -79,63 +82,53 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                   const Text('Product Details',
                       style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 24),
-                  _buildTextField(_nameController, 'Product Name', Icons.shopping_bag_outlined),
+
+                  ProductInputField(
+                    controller: _nameController,
+                    label: 'Product Name',
+                    icon: Icons.shopping_bag_outlined,
+                    validator: AppValidators.required,
+                  ),
                   const SizedBox(height: 20),
-                  _buildTextField(_priceController, 'Price', Icons.attach_money, isNumber: true),
+
+                  ProductInputField(
+                    controller: _priceController,
+                    label: 'Price',
+                    icon: Icons.attach_money,
+                    isNumber: true,
+                    validator: AppValidators.number,
+                  ),
                   const SizedBox(height: 20),
-                  _buildTextField(_descriptionController, 'Description', Icons.description, maxLines: 3),
+
+                  ProductInputField(
+                    controller: _descriptionController,
+                    label: 'Description',
+                    icon: Icons.description,
+                    maxLines: 5,
+                    validator: AppValidators.required,
+                  ),
                   const SizedBox(height: 20),
-                  _buildTextField(_imageController, 'Image URL', Icons.image, hint: 'https://image-link.com'),
+
+                  ProductInputField(
+                    controller: _imageController,
+                    label: 'Image URL',
+                    icon: Icons.image,
+                    hint: 'https://image-link.com',
+                    validator: AppValidators.url,
+                  ),
                   const SizedBox(height: 20),
-                  _buildTextField(_stockQuantityController, 'Stock Quantity', Icons.inventory_2_outlined, isNumber: true,),
+
+                  ProductInputField(
+                    controller: _stockQuantityController,
+                    label: 'Stock Quantity',
+                    icon: Icons.inventory_2_outlined,
+                    isNumber: true,
+                    validator: AppValidators.number,
+                  ),
                   const SizedBox(height: 40),
 
                   //if _isEditing=true then show a row of 2 button (Update & Delete)
-                  if(_isEditing)
-                    Row(
-                      children: [
-
-                        //Update
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: _isLoading ? null : _saveProduct,
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                            child: const Text('Update'),
-                          ),
-                        ),
-
-                        const SizedBox(width: 16,),
-
-                        //Delete
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: _isLoading ? null : _confirmDelete,
-                            icon: const Icon(Icons.delete_outline),
-                            label: const Text('Delete'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.red,
-                              side: const BorderSide(color: Colors.red),
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
-
-                  //if not _isEditing then show only a save product button
-                  else
-                    ElevatedButton(
-                      onPressed: _isLoading ? null : _saveProduct,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
-                      ),
-                      child: const Text('Save Product'),
-                    )
+                  _buildActionButtons(),
                 ],
               ),
             ),
@@ -145,8 +138,6 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
               color: Colors.black26,
               child: const Center(child: CircularProgressIndicator()),
             ),
-          if (_isLoading)
-            const Center(child: CircularProgressIndicator(),),
         ],
       ),
     );
@@ -267,30 +258,51 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, IconData icon,
-      {bool isNumber = false, int maxLines = 1, String? hint}) {
-    return TextFormField(
-      controller: controller,
-      maxLines: maxLines,
-      keyboardType: isNumber
-          ? const TextInputType.numberWithOptions(decimal: true)
-          : TextInputType.text,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        prefixIcon: Icon(icon),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      ),
+  Widget _buildActionButtons(){
+    if(_isEditing){
+      return Row(
+        children: [
 
-      //check for valid input
-      validator: (value) {
-        if (value == null || value.isEmpty) return 'Required field';
-        if (isNumber && double.tryParse(value) == null) return 'Enter a valid number';
-        if (label=='Image URL' && !_isValidUrl(value)){
-          return 'Please enter a valid URL (http/https)';
-        }
-        return null;
-      },
+          //Update
+          Expanded(
+            child: ElevatedButton(
+              onPressed: _isLoading ? null : _saveProduct,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.borderRadius)),
+              ),
+              child: const Text('Update'),
+            ),
+          ),
+
+          const SizedBox(width: 16,),
+
+          //Delete
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: _isLoading ? null : _confirmDelete,
+              icon: const Icon(Icons.delete_outline),
+              label: const Text('Delete'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.red,
+                side: const BorderSide(color: Colors.red),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.borderRadius)),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    //if not _isEditing then show only a save product button
+    return ElevatedButton(
+      onPressed: _isLoading ? null : _saveProduct,
+      style: ElevatedButton.styleFrom(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.borderRadius))
+      ),
+      child: const Text('Save Product'),
     );
   }
 }

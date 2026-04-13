@@ -1,10 +1,9 @@
-import 'package:flutter/foundation.dart';
-
 import 'product_form_screen.dart';
 import 'package:flutter/material.dart';
 import '../models/Product.dart';
 import '../providers/product_provider.dart';
 import 'package:provider/provider.dart';
+import '../widgets/product_card.dart';
 
 class ProductListScreen extends StatefulWidget{
   const ProductListScreen({super.key});
@@ -84,15 +83,14 @@ class _ProductListScreenState extends State<ProductListScreen>{
                   .toList();
 
                 if(filteredList.isEmpty) {
-                  return const Center(child: Text('No products founds'));
+                  return const Center(child: Text('No products found'));
                 }
 
                 return ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: filteredList.length,
                   itemBuilder: (context, index){
-                    final product=filteredList[index];
-                    return _buildProductCard(context, product, provider);
+                    return ProductCard(product: filteredList[index]);
                   },
                 );
               },
@@ -111,48 +109,7 @@ class _ProductListScreenState extends State<ProductListScreen>{
     );
   }
 
-  Widget _buildProductCard(BuildContext context, Product product, ProductProvider provider){
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      clipBehavior: Clip.antiAlias, // Ensures the InkWell ripple matches card corners
-      child: InkWell(
-        onTap: ()=>Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => ProductFormScreen(product: product)),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  _isValidUrl(product.imageUrl) ? product.imageUrl : 'https://via.placeholder.com/150',
-                  width: 70, height: 70, fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.image, size: 70),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(product.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),),
-                    const SizedBox(height: 4,),
-                    Text('\$${product.price}', style: const TextStyle(color: Colors.blueGrey),),
-                    Text('Stock: ${product.stockQuantity}',
-                        style: TextStyle(color: product.stockQuantity <5 ? Colors.red : Colors.green)),
-                  ],
-                ),
-              ),
-              const Icon(Icons.chevron_right, color: Colors.grey,),
-            ],
-          ),
-        ),
-      )
-    );
-  }
+
 
   bool _isValidUrl(String? url) {
     if (url == null || url.isEmpty) return false;
@@ -179,6 +136,4 @@ class _ProductListScreenState extends State<ProductListScreen>{
       ),
     );
   }
-
-
 }

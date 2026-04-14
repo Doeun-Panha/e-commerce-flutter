@@ -8,8 +8,12 @@ class ProductCard extends StatelessWidget{
 
   const ProductCard({super.key, required this.product});
 
+
+
   @override
   Widget build(BuildContext context) {
+    const String imageServerUrl = "http://10.0.2.2:8080";
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
@@ -27,10 +31,13 @@ class ProductCard extends StatelessWidget{
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.network(
-                  AppValidators.isRawUrlValid(product.imageUrl) ? product.imageUrl : 'https://via.placeholder.com/150',
+                  product.imageUrl.startsWith('http')
+                      ? product.imageUrl
+                      : '$imageServerUrl${product.imageUrl}',
                   width: 70, height: 70, fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.image, size: 70),
-                ),
+                  errorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.broken_image, size: 70, color: Colors.grey,),
+                )
               ),
 
               const SizedBox(width: 16,),
@@ -52,7 +59,7 @@ class ProductCard extends StatelessWidget{
                     Text(
                       'Stock: ${product.stockQuantity}',
                       style: TextStyle(
-                        color: product.stockQuantity < 5 ? Colors.red : Colors.green,
+                        color: product.stockQuantity < product.lowStockThreshold ? Colors.red : Colors.green,
                         fontWeight: FontWeight.w500,
                       ),
                     ),

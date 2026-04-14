@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:ecommerce/models/Product.dart';
 import 'package:http/http.dart' as http;
@@ -17,26 +18,48 @@ class ApiService {
     }
   }
 
-  Future<void> addProduct(Product product) async {
-    final response = await http.post(
-      Uri.parse(baseUrl),
-      headers: {"Content-Type": "application/json"},
-      body: json.encode(product.toJson()),
-    );
+  Future<void> addProduct(Product product, File? imageFile) async {
+    var request = http.MultipartRequest('POST', Uri.parse(baseUrl));
 
-    // If the status isn't 200 or 201, it failed!
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      print("Backend Error: ${response.body}");
-      throw Exception('Failed to save: ${response.reasonPhrase}');
+    //Add text fields
+    request.fields.addAll(product.toMultipartFields());
+
+    //Add image file if it exists
+    if(imageFile!=null){
+      request.files.add(await http.MultipartFile.fromPath(
+        'image',
+        imageFile.path,
+        contentType: http.MediaType('image', 'jpeg'),
+      ));
+    }
+
+    var streamedResponse = await request.send();
+    if(streamedResponse.statusCode!=200&&streamedResponse.statusCode!=201){
+      throw Exception('Failed to upload product. Status: ${streamedResponse.statusCode}');
     }
   }
 
-  Future<void> updateProduct(Product product) async {
-    await http.put(
-      Uri.parse("$baseUrl/${product.id}"),
-      headers: {"Content-Type": "application/json"},
-      body: json.encode(product.toJson()),
-    );
+  Future<void> updateProduct(Product product, File? imageFile) async {
+    // Use MultipartRequest for PUT to allow file uploads
+    var request = http.MultipartRequest('PUT', Uri.parse("$baseUrl/${product.id}"));
+
+    // 1. Add existing text fields
+    request.fields.addAll(product.toMultipartFields());
+
+    // 2. Add the new image file if the user picked one
+    if (imageFile != null) {
+      request.files.add(await http.MultipartFile.fromPath(
+        'image',
+        imageFile.path,
+        contentType: http.MediaType('image', 'jpeg'),
+      ));
+    }
+
+    var streamedResponse = await request.send();
+    if (streamedResponse.statusCode != 200) {
+      final resp = await http.Response.fromStream(streamedResponse);
+      throw Exception('Failed to update product: ${resp.body}');
+    }
   }
 
   Future<void> deleteProduct(int id) async {

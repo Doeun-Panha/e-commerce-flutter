@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:ecommerce/models/Product.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../providers/product_provider.dart';
 import '../utils/app_theme.dart';
@@ -19,12 +21,15 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   //global key
   final _formKey = GlobalKey<FormState>();
 
+  File? _selectedImage;
+  final ImagePicker _picker = ImagePicker();
+
   //Text EditingController
   late TextEditingController _nameController;
   late TextEditingController _priceController;
   late TextEditingController _descriptionController;
-  late TextEditingController _imageController;
   late TextEditingController _stockQuantityController;
+  late TextEditingController _lowStockThresholdController;
   
   bool _isLoading = false;
   bool get _isEditing => widget.product != null;
@@ -36,9 +41,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     _nameController = TextEditingController(text: widget.product?.name ?? '');
     _priceController = TextEditingController(text: widget.product?.price.toString() ?? '',);
     _descriptionController = TextEditingController(text: widget.product?.description.toString() ?? '');
-    _imageController = TextEditingController(text: widget.product?.imageUrl ?? '');
-    _imageController.addListener((){if(mounted) setState(() {});});
     _stockQuantityController = TextEditingController(text: widget.product?.stockQuantity.toString() ?? '');
+    _lowStockThresholdController = TextEditingController(text: widget.product?.lowStockThreshold.toString() ?? '');
   }
 
   //dispose
@@ -47,8 +51,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     _nameController.dispose();
     _priceController.dispose();
     _descriptionController.dispose();
-    _imageController.dispose();
     _stockQuantityController.dispose();
+    _lowStockThresholdController.dispose();
     super.dispose();
   }
   
@@ -77,6 +81,19 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
 
                   //image preview
                   _buildImagePreview(),
+                  const Text('Product Image', style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
+                  const SizedBox(height: 8,),
+
+                  OutlinedButton.icon(
+                    onPressed: _pickImage,
+                    icon: Icon(_selectedImage == null ? Icons.add_a_photo : Icons.refresh),
+                    label: Text(_selectedImage == null ? 'Select Product Image' : 'Change Image'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(AppTheme.borderRadius))
+                    )
+                  ),
+                  const SizedBox(height: 20,),
 
                   //text fields
                   const Text('Product Details',
@@ -110,21 +127,22 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                   const SizedBox(height: 20),
 
                   ProductInputField(
-                    controller: _imageController,
-                    label: 'Image URL',
-                    icon: Icons.image,
-                    hint: 'https://image-link.com',
-                    validator: AppValidators.url,
-                  ),
-                  const SizedBox(height: 20),
-
-                  ProductInputField(
                     controller: _stockQuantityController,
                     label: 'Stock Quantity',
                     icon: Icons.inventory_2_outlined,
                     isNumber: true,
                     validator: AppValidators.number,
                   ),
+                  const SizedBox(height: 20),
+
+                  ProductInputField(
+                    controller: _lowStockThresholdController, // You'll need to create this controller
+                    label: 'Low Stock Alert At',
+                    icon: Icons.notifications_active_outlined,
+                    isNumber: true,
+                    validator: AppValidators.number,
+                  ),
+
                   const SizedBox(height: 40),
 
                   //if _isEditing=true then show a row of 2 button (Update & Delete)
@@ -146,6 +164,13 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   Future<void> _saveProduct() async {
     if (!_formKey.currentState!.validate()) return;
 
+    if (!_isEditing && _selectedImage == null){
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a product image'),),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     //Get the provider without "listening" (since we are in a function, not the build method)
@@ -156,17 +181,18 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       name: _nameController.text.trim(),
       price: double.parse(_priceController.text),
       description: _descriptionController.text.trim(),
-      imageUrl: _imageController.text.trim(),
+      imageUrl: widget.product?.imageUrl ?? '',
       stockQuantity: int.parse(_stockQuantityController.text),
+      lowStockThreshold: int.parse(_lowStockThresholdController.text),
     );
 
     try {
       if (_isEditing) {
         //Use provider instead of api Service
-        await productProvider.updateProduct(productData);
+        await productProvider.updateProduct(productData, _selectedImage);
       } else {
         //Use provider instead of api Service
-        await productProvider.addProduct(productData);
+        await productProvider.addProduct(productData, _selectedImage);
       }
 
       if (mounted) {
@@ -185,11 +211,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       if (mounted) setState(() => _isLoading = false);
     }
   }
-  
-  bool _isValidUrl(String url) {
-    final uri = Uri.tryParse(url);
-    return uri != null && uri.hasAbsolutePath && (uri.isScheme('http') || uri.isScheme('https'));
-  }
+
 
   Future<void> _confirmDelete() async {
     final confirmed = await showDialog<bool>(
@@ -231,19 +253,25 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
         color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-
-        //Check and try to use the image, if not unable to do so, will display an errorplaceholder instead
-        child: _imageController.text.isNotEmpty && _isValidUrl(_imageController.text) ? Image.network(
-          _imageController.text,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => _errorPlaceholder(),
-        )
-        : _errorPlaceholder(),
-      ),
+      child: _selectedImage != null
+        ? ClipRRect(
+          borderRadius: BorderRadiusGeometry.circular(AppTheme.borderRadius),
+          child: Image.file(_selectedImage!, fit: BoxFit.cover,),
+          )
+        : (widget.product?.imageUrl != null && widget.product!.imageUrl.isNotEmpty)
+          ? ClipRRect(
+            borderRadius: BorderRadiusGeometry.circular(AppTheme.borderRadius),
+            child: Image.network(
+              widget.product!.imageUrl.startsWith('http')
+                ? widget.product!.imageUrl
+                : 'http://10.0.2.2:8080${widget.product!.imageUrl}',
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => _errorPlaceholder(),
+            ),
+          )
+          : const Center(child: Icon(Icons.image_search, size: 50, color: Colors.grey,)),
     );
   }
 
@@ -304,5 +332,24 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       ),
       child: const Text('Save Product'),
     );
+  }
+
+  //
+  Future<void> _pickImage() async {
+    try{
+      final XFile? pickedFile = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1024,
+        imageQuality: 80,
+      );
+
+      if(pickedFile!=null){
+        setState(() {
+          _selectedImage = File(pickedFile.path);
+        });
+      }
+    }catch(e){
+      debugPrint("Error picking image: $e");
+    }
   }
 }

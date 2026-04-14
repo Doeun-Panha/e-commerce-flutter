@@ -5,14 +5,16 @@ class Product {
   final String description;
   final String imageUrl;
   final int stockQuantity;
+  final int lowStockThreshold;
 
   Product({
     required this.id,
     required this.name,
     required this.price,
     required this.description,
-    required this.imageUrl,
+    this.imageUrl='',
     required this.stockQuantity,
+    required this.lowStockThreshold,
   });
 
   factory Product.fromJson(Map<String, dynamic> json){
@@ -23,6 +25,7 @@ class Product {
       description: json['description'] ?? '',
       imageUrl: json['imageUrl'] ?? '',
       stockQuantity: (json['stockQuantity'] as num?)?.toInt() ?? 0,
+      lowStockThreshold: (json['lowStockThreshold'] as num?)?.toInt() ?? 5
     );
   }
 
@@ -32,5 +35,16 @@ class Product {
     'description': description,
     'imageUrl': imageUrl,
     'stockQuantity': stockQuantity,
+    'lowStockThreshold': lowStockThreshold,
   };
+
+  Map<String, String> toMultipartFields(){
+    return{
+      'name': name,
+      'price': price.toString(),
+      'description': description,
+      'stockQuantity': stockQuantity.toString(),
+      'lowStockThreshold': lowStockThreshold.toString(),
+    };
+  }
 }

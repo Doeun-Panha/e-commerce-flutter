@@ -36,3 +36,26 @@ All notable changes to this project will be documented in this file.
 - **Keyboard Optimization**: Set `isNumber: true` for price and stock fields to automatically trigger the numeric keypad.
 - **Safety Dialogs**: Added an asynchronous confirmation dialog for the "Delete Product" action.
 - **Search Logic**: Integrated a local search filter in `ProductListScreen` using a `TextEditingController` listener.
+
+## [2026-04-14] - Full-Stack Image Upload & Local Storage
+
+### 🏗️ Backend & Database (Spring Boot / SQL Server)
+- **Local File Storage**: Configured ProductController to save binary images to a dedicated user-photos/ directory on the server instead of relying on external URLs.
+- **Static Resource Mapping**: Implemented WebConfig to map the web path /uploads/** to the physical storage folder, allowing the Flutter app to retrieve files via HTTP.
+- **Repository Optimization**: Fixed Java Generics type error by migrating ProductRepository from primitive int to the Integer wrapper class.
+- **Database Strategy**: Shifted storage logic to save relative file paths in SQL Server, significantly improving query performance and data portability.
+
+### 📱 Frontend & Mobile (Flutter)
+- ** Native Image Selection**: Integrated the image_picker plugin to allow selecting product photos from the Android gallery.
+- **Multipart Data Handling**: Refactored ProductProvider and ApiService to use http.MultipartRequest, enabling simultaneous upload of product metadata and binary image files.
+- **Dynamic Image Hosting**: Implemented a "Hybrid URL" logic in _buildImagePreview and ProductCard to gracefully handle both legacy web links (http://...) and new local server paths.
+- **Native Configuration**: Configured AndroidManifest.xml with READ_EXTERNAL_STORAGE and READ_MEDIA_IMAGES permissions to support modern Android API levels.
+
+### 🛠️ Fixes & Native Troubleshooting
+- **Build Synchronization**: Resolved MissingPluginException by performing a full native "Cold Boot" (clean/rebuild) to register plugin channels.
+- **Model Flexibility**: Updated the Product model to make imageUrl optional, preventing validation errors during the "Create" phase of new products.
+- **Emulator Connectivity**: Configured the Flutter app to use the specialized 10.0.2.2 IP address to communicate with the Spring Boot server running on the host machine.
+
+|                 Dynamic Image Storing                  |
+|:------------------------------------------------------:|
+| ![Dynamic image storing](docs/dynamicImageStoring.png) |

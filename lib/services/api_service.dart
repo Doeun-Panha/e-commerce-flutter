@@ -39,7 +39,7 @@ class ApiService {
     }
   }
 
-  Future<void> updateProduct(Product product, File? imageFile) async {
+  Future<Product> updateProduct(Product product, File? imageFile) async {
     // Use MultipartRequest for PUT to allow file uploads
     var request = http.MultipartRequest('PUT', Uri.parse("$baseUrl/${product.id}"));
 
@@ -56,9 +56,12 @@ class ApiService {
     }
 
     var streamedResponse = await request.send();
-    if (streamedResponse.statusCode != 200) {
-      final resp = await http.Response.fromStream(streamedResponse);
-      throw Exception('Failed to update product: ${resp.body}');
+    var response = await http.Response.fromStream(streamedResponse);
+
+    if(response.statusCode == 200){
+      return Product.fromJson(json.decode(response.body));
+    } else {
+      throw Exception('Failed to update product: ${response.body}');
     }
   }
 

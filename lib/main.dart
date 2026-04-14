@@ -1,13 +1,26 @@
+import 'dart:io';
+
+import 'package:ecommerce/providers/category_provider.dart';
 import 'package:ecommerce/providers/product_provider.dart';
 import 'package:ecommerce/screens/product_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+class DevHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+  }
+}
+
 void main() {
+  HttpOverrides.global=DevHttpOverrides();
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ProductProvider()..loadProducts()),
+        ChangeNotifierProvider(create: (_) => CategoryProvider()),
       ],
       child: const MyApp(),
     ),

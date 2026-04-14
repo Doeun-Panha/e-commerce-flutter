@@ -1,9 +1,12 @@
+import 'package:ecommerce/screens/category_manager_screen.dart';
+
 import 'product_form_screen.dart';
 import 'package:flutter/material.dart';
-import '../models/Product.dart';
 import '../providers/product_provider.dart';
 import 'package:provider/provider.dart';
 import '../widgets/product_card.dart';
+
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class ProductListScreen extends StatefulWidget{
   const ProductListScreen({super.key});
@@ -19,9 +22,12 @@ class _ProductListScreenState extends State<ProductListScreen>{
   @override
   void initState(){
     super.initState();
+    // Clear the cache once to remove all "failed" image markers
+    DefaultCacheManager().emptyCache();
     _searchController.addListener((){
       setState(() => _searchQuery=_searchController.text);
     });
+
   }
 
   @override
@@ -37,6 +43,13 @@ class _ProductListScreenState extends State<ProductListScreen>{
         title: const Text('Product Management', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
         elevation: 0,
+        actions: [
+          IconButton(
+              onPressed: ()=>Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context)=>const CategoryManagerScreen())
+              ), icon: const Icon(Icons.category))
+        ],
       ),
       body: Column(
         children: [
@@ -88,9 +101,13 @@ class _ProductListScreenState extends State<ProductListScreen>{
 
                 return ListView.builder(
                   padding: const EdgeInsets.all(16),
+                  cacheExtent: 1000,
                   itemCount: filteredList.length,
                   itemBuilder: (context, index){
-                    return ProductCard(product: filteredList[index]);
+                    return ProductCard(
+                      key: ValueKey(filteredList[index].id),
+                      product: filteredList[index],
+                    );
                   },
                 );
               },

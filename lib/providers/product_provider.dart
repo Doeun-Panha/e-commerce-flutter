@@ -40,9 +40,18 @@ class ProductProvider with ChangeNotifier{
     _isLoading = true;
     notifyListeners();
     try {
-      await _apiService.updateProduct(product, imageFile);
+      // 1. Send data to Spring Boot
+      final updatedProduct = await _apiService.updateProduct(product, imageFile);
+
+      // 2. Local Update: Find and replace the specific product
+      final index = _products.indexWhere((p) => p.id == product.id);
+      if (index != -1) {
+        _products[index] = updatedProduct; // Update only the specific item
+        notifyListeners();
+      }
       await loadProducts(); // Refresh list to see the new server path
     } catch (e) {
+      debugPrint("Update failed: $e");
       rethrow;
     } finally {
       _isLoading = false;
@@ -55,5 +64,22 @@ class ProductProvider with ChangeNotifier{
     await _apiService.deleteProduct(id);
     _products.removeWhere((p)=>p.id==id);
     notifyListeners();
+  }
+
+  // Add this to your ProductProvider
+  List<Product> getProductsByCategory(int categoryId) {
+    return _products.where((p) => p.category?.id == categoryId).toList();
+  }
+
+  void syncProductsAfterCategoryDeletion(int categoryId) {
+    bool changed = false;
+    for (int i = 0; i < _products.length; i++) {
+      if (_products[i].category?.id == categoryId) {
+        // Set to 'None' or 'Uncategorized' locally
+        _products[i] = _products[i].copyWith(category: null);
+        changed = true;
+      }
+    }
+    if (changed) notifyListeners();
   }
 }

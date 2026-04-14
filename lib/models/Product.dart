@@ -1,3 +1,6 @@
+import 'package:flutter/foundation.dart' hide Category;
+import '../models/Category.dart';
+
 class Product {
   final int id;
   final String name;
@@ -7,6 +10,8 @@ class Product {
   final int stockQuantity;
   final int lowStockThreshold;
 
+  final Category? category;
+
   Product({
     required this.id,
     required this.name,
@@ -15,7 +20,31 @@ class Product {
     this.imageUrl='',
     required this.stockQuantity,
     required this.lowStockThreshold,
+
+    this.category,
   });
+
+  Product copyWith({
+    int? id,
+    String? name,
+    double? price,
+    String? description,
+    String? imageUrl,
+    int? stockQuantity,
+    int? lowStockThreshold,
+    Category? category,
+  }) {
+    return Product(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      price: price ?? this.price,
+      description: description ?? this.description,
+      imageUrl: imageUrl ?? this.imageUrl,
+      stockQuantity: stockQuantity ?? this.stockQuantity,
+      lowStockThreshold: lowStockThreshold ?? this.lowStockThreshold,
+      category: category ?? this.category,
+    );
+  }
 
   factory Product.fromJson(Map<String, dynamic> json){
     return Product(
@@ -25,7 +54,9 @@ class Product {
       description: json['description'] ?? '',
       imageUrl: json['imageUrl'] ?? '',
       stockQuantity: (json['stockQuantity'] as num?)?.toInt() ?? 0,
-      lowStockThreshold: (json['lowStockThreshold'] as num?)?.toInt() ?? 5
+      lowStockThreshold: (json['lowStockThreshold'] as num?)?.toInt() ?? 5,
+
+      category: json['category'] != null ? Category.fromJson(json['category']) : null,
     );
   }
 
@@ -36,6 +67,7 @@ class Product {
     'imageUrl': imageUrl,
     'stockQuantity': stockQuantity,
     'lowStockThreshold': lowStockThreshold,
+    'category': category?.toJson(),
   };
 
   Map<String, String> toMultipartFields(){
@@ -45,6 +77,7 @@ class Product {
       'description': description,
       'stockQuantity': stockQuantity.toString(),
       'lowStockThreshold': lowStockThreshold.toString(),
+      'categoryId': category?.id.toString() ?? "",
     };
   }
 }

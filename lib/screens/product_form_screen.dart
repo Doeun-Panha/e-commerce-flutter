@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:ecommerce/models/Product.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import '../models/Category.dart';
+import '../providers/category_provider.dart';
 import '../providers/product_provider.dart';
 import '../utils/app_theme.dart';
 import '../utils/validators.dart';
@@ -24,6 +26,9 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
 
+  Category? _selectedCategory;
+  bool _isAddingNewCategory = false;
+
   //Text EditingController
   late TextEditingController _nameController;
   late TextEditingController _priceController;
@@ -43,6 +48,13 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     _descriptionController = TextEditingController(text: widget.product?.description.toString() ?? '');
     _stockQuantityController = TextEditingController(text: widget.product?.stockQuantity.toString() ?? '');
     _lowStockThresholdController = TextEditingController(text: widget.product?.lowStockThreshold.toString() ?? '');
+
+    _selectedCategory = widget.product?.category;
+
+    // Fetch categories when screen opens
+    Future.microtask(() =>
+        Provider.of<CategoryProvider>(context, listen: false).fetchCategories()
+    );
   }
 
   //dispose
@@ -142,7 +154,49 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                     isNumber: true,
                     validator: AppValidators.number,
                   ),
+                  const SizedBox(height: 20),
 
+                  const Text('Category', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+
+                  Consumer<CategoryProvider>(
+                    builder: (context, provider, child) {
+                      // Check if the current _selectedCategory actually exists in the provider's list
+                      final bool categoryExists = provider.categories.any((cat) => cat.id == _selectedCategory?.id);
+
+                      return DropdownButtonFormField<Category?>(
+                        // Force value to null if the category is no longer in the list
+                        value: categoryExists ? _selectedCategory : null,
+                        isExpanded: true,
+                        decoration: AppTheme.inputDecoration(label: 'Select Category', icon: Icons.category_outlined),
+                        items: [
+                          ...provider.categories.map((cat) => DropdownMenuItem(
+                            value: cat, // Pass the whole object
+                            child: Text(cat.name),
+                          )),
+                          const DropdownMenuItem<Category?>(
+                            value: null, // We use null to signal a new creation
+                            child: Text(
+                              "+ Create New Category",
+                              style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                        onChanged: (Category? value) {
+                          if (value == null) {
+                            // 3. If they clicked the "+ Create New" item, open the dialog
+                            _showNewCategoryDialog();
+                          } else {
+                            // Otherwise, just update the selection normally
+                            setState(() => _selectedCategory = value);
+                          }
+                        },
+                        hint: provider.categories.isEmpty
+                            ? const Text("No categories available")
+                            : const Text("Select Category"),
+                      );
+                    },
+                  ),
                   const SizedBox(height: 40),
 
                   //if _isEditing=true then show a row of 2 button (Update & Delete)
@@ -176,6 +230,10 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     //Get the provider without "listening" (since we are in a function, not the build method)
     final productProvider=Provider.of<ProductProvider>(context, listen: false);
 
+    final price = double.tryParse(_priceController.text) ?? 0.0;
+    final stock = int.tryParse(_stockQuantityController.text) ?? 0;
+    final threshold = int.tryParse(_lowStockThresholdController.text) ?? 5;
+
     final productData = Product(
       id: widget.product?.id ?? 0,
       name: _nameController.text.trim(),
@@ -184,6 +242,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       imageUrl: widget.product?.imageUrl ?? '',
       stockQuantity: int.parse(_stockQuantityController.text),
       lowStockThreshold: int.parse(_lowStockThresholdController.text),
+      category: _selectedCategory,
     );
 
     try {
@@ -339,8 +398,9 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     try{
       final XFile? pickedFile = await _picker.pickImage(
         source: ImageSource.gallery,
-        maxWidth: 1024,
-        imageQuality: 80,
+        maxWidth: 1280,
+        maxHeight: 720,
+        imageQuality: 85,
       );
 
       if(pickedFile!=null){
@@ -352,4 +412,53 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       debugPrint("Error picking image: $e");
     }
   }
+
+  void _showNewCategoryDialog() {
+    TextEditingController _categoryController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState){
+          return AlertDialog(
+            title: const Text("New Category"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(controller: _categoryController,),
+                if(_isAddingNewCategory)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 10),
+                    child: LinearProgressIndicator(),
+                  )
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: _isAddingNewCategory ? null : () => Navigator.pop(context),
+                child: const Text("Cancel")
+              ),
+              ElevatedButton(
+                onPressed: _isAddingNewCategory ? null : () async{
+                  setDialogState(()=>_isAddingNewCategory=true);
+
+                  final provider = context.read<CategoryProvider>();
+
+                  final newCat = await provider.addCategory(_categoryController.text.trim());
+
+                  setDialogState(() => _isAddingNewCategory = false); // Stop Loading
+
+                  if (newCat != null) {
+                    setState(() => _selectedCategory = newCat);
+                    if (context.mounted) Navigator.pop(context);
+                  }
+                },
+                child: const Text("Create")
+              ),
+            ]
+          );
+        },
+      )
+    );
+  }
+
 }

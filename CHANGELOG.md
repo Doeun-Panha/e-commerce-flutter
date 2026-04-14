@@ -59,3 +59,50 @@ All notable changes to this project will be documented in this file.
 |                 Dynamic Image Storing                  |
 |:------------------------------------------------------:|
 | ![Dynamic image storing](docs/dynamicImageStoring.png) |
+
+## [2026-04-14] - Product Categorization System
+
+### 🏗️ Backend & Database
+- **Relational Mapping**: Created Category entity and established a @ManyToOne relationship with Product.
+- **Category API**: Implemented REST endpoints to fetch all categories and persist new ones.
+- **SQL Server Update**: Migrated schema to include category_id foreign key in the Products table.
+
+### 📱 Frontend & UI
+- **Dynamic Dropdown**: Integrated DropdownButtonFormField with a hybrid selection model (choose existing vs. trigger new).
+- **Categorization Dialog**: Developed an asynchronous AlertDialog to allow real-time category creation without losing form state.
+- **State Integration**: Linked CategoryProvider to the product creation flow to ensure the dropdown always has the latest data.
+
+## [1.1.0] - 2026-04-15
+
+### Fixed
+- **Backend**: Resolved `DataIntegrityViolationException` when deleting categories by implementing a "Set Null" strategy. Injected `ProductRepository` into `CategoryController` to decouple products before category removal.
+- **Frontend**: Fixed Flutter assertion crash (Red Screen) in `ProductFormScreen` by adding existence validation for the `_selectedCategory` within the dropdown.
+
+### Added
+- **UI**: Implemented an inline "+ Create New Category" option within the product form dropdown for a more seamless user experience.
+- **Management**: Added a comprehensive `CategoryListScreen` with Edit and Delete functionality.
+- **Sync**: Integrated `ProductProvider` synchronization logic to ensure the product list updates immediately after a category is modified or removed.
+
+### Changed
+- Refactored `ProductFormScreen` to use a more robust `Consumer` pattern for real-time category updates.
+
+## [1.1.0] - 2026-04-15
+
+### Fixed
+- **Backend**: Resolved `DataIntegrityViolationException` when deleting categories by implementing a "Set Null" strategy. Injected `ProductRepository` into `CategoryController` to decouple products before category removal.
+- **Frontend**: Fixed Flutter assertion crash (Red Screen) in `ProductFormScreen` by adding existence validation for the `_selectedCategory` within the dropdown.
+
+### Added
+- **UI**: Implemented an inline **"+ Create New Category"** option within the product form dropdown for a more seamless user experience.
+- **Management**: Added a comprehensive `CategoryListScreen` with full CRUD (Edit/Delete) functionality for categories.
+
+### Changed
+- **Sync**: Integrated `ProductProvider` synchronization logic to ensure the product list updates immediately after a category is modified or removed.
+- **Refactor**: Rebuilt `ProductFormScreen` using a more robust `Consumer` pattern to handle real-time UI updates when category data changes.
+- **Reliable**: Changed all the products' url to use user's uploaded image instead to ensure reliability when loading images.
+
+|                                              Outcomes                                              |
+|:--------------------------------------------------------------------------------------------------:|
+| ![Category Dropdown List in Product Form Screen](docs/categoryDropdownList(ProductFormScreen).png) |
+|            ![New or Update Category Dialog Box](docs/newOrUpdateCategoryDialogBox.png)             |
+|                     ![Category Manager Screen](docs/categoryManagerScreen.png)                     |

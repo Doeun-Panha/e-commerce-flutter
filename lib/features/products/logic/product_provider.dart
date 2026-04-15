@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import '../models/Product.dart';
-import '../services/api_service.dart';
+import '../data/Product.dart';
+import '../data/product_api_service.dart';
 
 class ProductProvider with ChangeNotifier{
-  final ApiService _apiService = ApiService();
+  final ProductApiService _apiService = ProductApiService();
   List<Product> _products = [];
   bool _isLoading = false;
 
@@ -16,13 +16,13 @@ class ProductProvider with ChangeNotifier{
   int get lowStockCount => _products.where((p) => p.stockQuantity<p.lowStockThreshold).length;
 
   //Fetch all products
-  Future<void> loadProducts() async {
+  Future<void> fetchProducts() async {
     _isLoading = true;
     notifyListeners();
     try{
       _products=await _apiService.getProducts();
     }catch(e){
-      rethrow;
+      debugPrint("Load Products Error: $e");
     }finally{
       _isLoading = false;
       notifyListeners();
@@ -31,8 +31,14 @@ class ProductProvider with ChangeNotifier{
 
   //Add a new product
   Future<void> addProduct(Product product, File? imageFile) async {
-    await _apiService.addProduct(product, imageFile);
-    await loadProducts();
+    try {
+      final newProduct = await _apiService.saveProduct(product, imageFile, isUpdate: false);
+      _products.add(newProduct); // Add the actual object returned by the server
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Add Product Error: $e");
+      rethrow;
+    }
   }
 
   //Update existing product
@@ -41,7 +47,7 @@ class ProductProvider with ChangeNotifier{
     notifyListeners();
     try {
       // 1. Send data to Spring Boot
-      final updatedProduct = await _apiService.updateProduct(product, imageFile);
+      final updatedProduct = await _apiService.saveProduct(product, imageFile, isUpdate: true);
 
       // 2. Local Update: Find and replace the specific product
       final index = _products.indexWhere((p) => p.id == product.id);
@@ -49,7 +55,6 @@ class ProductProvider with ChangeNotifier{
         _products[index] = updatedProduct; // Update only the specific item
         notifyListeners();
       }
-      await loadProducts(); // Refresh list to see the new server path
     } catch (e) {
       debugPrint("Update failed: $e");
       rethrow;
@@ -61,9 +66,14 @@ class ProductProvider with ChangeNotifier{
 
   //Delete product
   Future<void> deleteProduct(int id) async{
-    await _apiService.deleteProduct(id);
-    _products.removeWhere((p)=>p.id==id);
-    notifyListeners();
+    try {
+      await _apiService.deleteProduct(id);
+      _products.removeWhere((p) => p.id == id);
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Delete Product Error: $e");
+      rethrow;
+    }
   }
 
   // Add this to your ProductProvider

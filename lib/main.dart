@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:ecommerce/providers/category_provider.dart';
-import 'package:ecommerce/providers/product_provider.dart';
-import 'package:ecommerce/screens/product_list_screen.dart';
+import 'package:ecommerce/features/categories/logic/category_provider.dart';
+import 'package:ecommerce/features/products/logic/product_provider.dart';
+import 'package:ecommerce/features/products/presentation/product_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -19,7 +19,7 @@ void main() {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ProductProvider()..loadProducts()),
+        ChangeNotifierProvider(create: (_) => ProductProvider()..fetchProducts()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
       ],
       child: const MyApp(),

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart' hide Category;
-import '../models/Category.dart';
+import '../../../core/constants/api_constants.dart';
+import '../../categories/data/Category.dart';
 
 class Product {
   final int id;
@@ -79,5 +80,11 @@ class Product {
       'lowStockThreshold': lowStockThreshold.toString(),
       'categoryId': category?.id.toString() ?? "",
     };
+  }
+
+  String get fullImageUrl {
+    if (imageUrl.startsWith('http')) return imageUrl;
+    final String cleanPath = imageUrl.startsWith('/') ? imageUrl : '/$imageUrl';
+    return "${ApiConstants.uploadBase}$cleanPath";
   }
 }

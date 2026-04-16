@@ -15,6 +15,9 @@ class ProductProvider with ChangeNotifier{
   int get totalItems => _products.length;
   int get lowStockCount => _products.where((p) => p.stockQuantity<p.lowStockThreshold).length;
 
+  String _selectedFilter = 'All';
+  String get selectedFilter => _selectedFilter;
+
   //Fetch all products
   Future<void> fetchProducts() async {
     _isLoading = true;
@@ -91,5 +94,31 @@ class ProductProvider with ChangeNotifier{
       }
     }
     if (changed) notifyListeners();
+  }
+
+  void setFilter(String filter){
+    _selectedFilter = filter;
+    notifyListeners();
+  }
+
+  List<Product> get filteredProducts {
+    List<Product> list = [..._products];
+
+    // 1. Handle Sorting (A-Z, Price, Low Stock)
+    if (_selectedFilter == 'A-Z') {
+      list.sort((a, b) => a.name.compareTo(b.name));
+    } else if (_selectedFilter == 'Price') {
+      list.sort((a, b) => a.price.compareTo(b.price));
+    } else if (_selectedFilter == 'Low Stock') {
+      list = list.where((p) => p.stockQuantity <= p.lowStockThreshold).toList();
+    }
+
+    // 2. Handle Category Filtering
+    final specialFilters = ['All', 'A-Z', 'Price', 'Low Stock'];
+    if (!specialFilters.contains(_selectedFilter)) {
+      list = list.where((p) => p.category?.name == _selectedFilter).toList();
+    }
+
+    return list;
   }
 }

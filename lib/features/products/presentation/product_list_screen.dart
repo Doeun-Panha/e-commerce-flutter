@@ -1,5 +1,6 @@
 import 'package:ecommerce/core/theme/app_theme.dart';
 import 'package:ecommerce/features/categories/presentation/category_manager_screen.dart';
+import 'package:ecommerce/features/categories/logic/category_provider.dart';
 
 import 'product_form_screen.dart';
 import 'package:flutter/material.dart';
@@ -22,9 +23,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
   void initState() {
     super.initState();
     // Fetch data immediately when screen loads
-    Future.microtask(() =>
-        Provider.of<ProductProvider>(context, listen: false).fetchProducts()
-    );
+    Future.microtask(() {
+      if(mounted){
+      Provider.of<ProductProvider>(context, listen: false).fetchProducts();
+      Provider.of<CategoryProvider>(context, listen: false).fetchCategories();
+      }
+    });
 
     // Clear the cache once to remove all "failed" image markers
     _searchController.addListener(() {
@@ -51,6 +55,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
         child: Column(
           children: [
             _buildDashboard(), // Summary cards
+            _buildFilterRow(),
             _buildSearchBar(), // Search input
             const SizedBox(height: 8),
             _buildProductList(), // The dynamic list
@@ -104,23 +109,41 @@ class _ProductListScreenState extends State<ProductListScreen> {
   Widget _buildSummaryCard(String title, String value, IconData icon,
       Color color) {
     return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.3)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(height: 8),
-            Text(title, style: TextStyle(
-                color: color, fontWeight: FontWeight.bold, fontSize: 12)),
-            Text(value, style: const TextStyle(
-                fontSize: 22, fontWeight: FontWeight.bold)),
-          ],
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          final provider = Provider.of<ProductProvider>(context, listen: false);
+          // If user taps the Low Stock card, filter for Low Stock. Otherwise, show All.
+          if (title == "Low Stock") {
+            provider.setFilter("Low Stock");
+          } else {
+            provider.setFilter("All");
+          }
+        },
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: color.withOpacity(0.3)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: color, size: 20),
+              const Spacer(),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(title, style: TextStyle(
+                      color: color, fontWeight: FontWeight.bold, fontSize: 12)),
+                  Text(value, style: const TextStyle(
+                      fontSize: 22, fontWeight: FontWeight.bold)),
+                ],
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -155,7 +178,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final filteredList = provider.products
+          final filteredList = provider.filteredProducts
               .where((p) =>
               p.name.toLowerCase().contains(_searchQuery.toLowerCase()))
               .toList();
@@ -201,6 +224,41 @@ class _ProductListScreenState extends State<ProductListScreen> {
           ),
       label: const Text('Add Product'),
       icon: const Icon(Icons.add),
+    );
+  }
+
+  Widget _buildFilterRow() {
+    return Consumer2<ProductProvider, CategoryProvider>(
+      builder: (context, productProd, catProd, child) {
+        // Combine hardcoded filters with dynamic categories
+        final filters = ['All', 'A-Z', 'Price', ...catProd.categories.map((c) => c.name)];
+
+        return SizedBox(
+          height: 50,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: filters.length,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemBuilder: (context, index) {
+              final filter = filters[index];
+              final isSelected = productProd.selectedFilter == filter;
+
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: FilterChip(
+                  selected: isSelected,
+                  label: Text(filter),
+                  onSelected: (bool selected) {
+                    productProd.setFilter(filter);
+                  },
+                  selectedColor: Theme.of(context).colorScheme.primaryContainer,
+                  checkmarkColor: Theme.of(context).colorScheme.primary,
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

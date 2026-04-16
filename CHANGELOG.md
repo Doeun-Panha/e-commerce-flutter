@@ -39,20 +39,6 @@ All notable changes to this project will be documented in this file.
 |            ![New or Update Category Dialog Box](docs/newOrUpdateCategoryDialogBox.png)             |
 |                     ![Category Manager Screen](docs/categoryManagerScreen.png)                     |
 
-## [1.1.0] - 2026-04-15
-
-### Fixed
-- **Backend**: Resolved `DataIntegrityViolationException` when deleting categories by implementing a "Set Null" strategy. Injected `ProductRepository` into `CategoryController` to decouple products before category removal.
-- **Frontend**: Fixed Flutter assertion crash (Red Screen) in `ProductFormScreen` by adding existence validation for the `_selectedCategory` within the dropdown.
-
-### Added
-- **UI**: Implemented an inline "+ Create New Category" option within the product form dropdown for a more seamless user experience.
-- **Management**: Added a comprehensive `CategoryListScreen` with Edit and Delete functionality.
-- **Sync**: Integrated `ProductProvider` synchronization logic to ensure the product list updates immediately after a category is modified or removed.
-
-### Changed
-- Refactored `ProductFormScreen` to use a more robust `Consumer` pattern for real-time category updates.
-
 ## [2026-04-14] - Product Categorization System
 
 ### 🏗️ Backend & Database
@@ -122,4 +108,3 @@ All notable changes to this project will be documented in this file.
 | ![Before](docs/invalid_image_display&vertical_rendering_of_text.png) |      ![After](docs/fixed_error_image_link.png)      |
 |                          ![Squashed List]()                          | ![Clean List](docs/cleaner_product_list_screen.png) |
 |                      ![Product Screen Before](docs/productFormScreenBefore.png)                      |             ![Cleaner Product Screen](docs/cleanerProductFormScreen.png)             |
-

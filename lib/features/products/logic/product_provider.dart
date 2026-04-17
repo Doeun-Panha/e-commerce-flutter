@@ -13,7 +13,7 @@ class ProductProvider with ChangeNotifier{
   bool get isLoading => _isLoading;
 
   int get totalItems => _products.length;
-  int get lowStockCount => _products.where((p) => p.stockQuantity<p.lowStockThreshold).length;
+  int get lowStockCount => _products.where((p) => p.stockQuantity<=p.lowStockThreshold).length;
 
   String _selectedFilter = 'All';
   String get selectedFilter => _selectedFilter;

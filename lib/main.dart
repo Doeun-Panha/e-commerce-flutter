@@ -6,6 +6,9 @@ import 'package:ecommerce/features/products/presentation/product_list_screen.dar
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'features/auth/logic/auth_provider.dart';
+import 'features/auth/presentation/login_screen.dart';
+
 class DevHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
@@ -19,7 +22,8 @@ void main() {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ProductProvider()..fetchProducts()),
+        ChangeNotifierProvider(create: (_) => AuthProvider()..checkAuthStatus(),),
+        ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
       ],
       child: const MyApp(),
@@ -39,7 +43,15 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const ProductListScreen(),
+      home:Consumer<AuthProvider>(
+        builder: (context, auth, _) {
+          if (auth.isAuthenticated) {
+            return const ProductListScreen();
+          }
+          // We will create LoginScreen next!
+          return const LoginScreen();
+        },
+      ),
     );
   }
 }

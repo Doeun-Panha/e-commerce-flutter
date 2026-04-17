@@ -2,6 +2,7 @@ import 'package:ecommerce/core/theme/app_theme.dart';
 import 'package:ecommerce/features/categories/presentation/category_manager_screen.dart';
 import 'package:ecommerce/features/categories/logic/category_provider.dart';
 
+import '../../auth/logic/auth_provider.dart';
 import 'product_form_screen.dart';
 import 'package:flutter/material.dart';
 import '../logic/product_provider.dart';
@@ -75,6 +76,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
           .colorScheme
           .primaryContainer,
       actions: [
+        // Category Manager Button
         IconButton(
           onPressed: () =>
               Navigator.push(
@@ -83,8 +85,38 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     builder: (context) => const CategoryManagerScreen()),
               ),
           icon: const Icon(Icons.category_outlined),
-        )
+        ),
+        // Logout Button
+        IconButton(
+          onPressed: () => _showLogoutDialog(context),
+          icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
+          tooltip: "Logout",
+        ),
       ],
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Logout"),
+        content: const Text("Are you sure you want to sign out of the admin panel?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              context.read<AuthProvider>().logout();
+              Navigator.pop(context); // Close dialog
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text("Logout", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
     );
   }
 

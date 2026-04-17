@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2026-04-17
+
+### 🏗️ Authentication & Full-Stack Security
+
+- **JWT Implementation**: Integrated stateless authentication using io.jsonwebtoken (JJWT) on the backend and flutter_secure_storage on the mobile client.
+- **Security Filter Chain**: Implemented JwtAuthenticationFilter in Spring Boot to intercept and validate Bearer tokens for all protected API routes.
+- **Reactive Auth Guard**: Refactored main.dart using a Consumer<AuthProvider> pattern to automatically toggle the app root between LoginScreen and ProductListScreen based on real-time authentication state.
+- **Authenticated Services**: Updated ProductApiService and CategoryApiService to globally inject the stored JWT into request headers.
+
+### 📁 Static Resource & Image Resolution
+
+- **Public Resource Mapping**: Corrected WebConfig to map the URL path /uploads/** to the physical uploads/ directory on the server.
+- **Security Bypass**: Configured SecurityConfig and JwtAuthenticationFilter to explicitly ignore the /uploads/ path, resolving the 403 Forbidden error for static image rendering in the Flutter app.
+- **Path Calibration**: Standardized file storage to the root uploads/ folder to ensure consistency between the Java ResourceHandler and the physical file system.
+
+### 🛠️ UI/UX & Navigation
+
+- **Logout Flow**: Added a logout action to the ProductInventory AppBar with a confirmation dialog and automated state cleanup.
+- **Resilient Layout**: Fixed placeholder layout in ProductFormScreen using double.infinity width to ensure the "Invalid Image" box fills the column width.
+- **Native Build Stability**: Migrated android/app/build.gradle.kts to proper Kotlin DSL syntax, resolving minSdkVersion and jvmTarget deprecation errors.
+
+### 🛠 Fixes & Improvements
+
+- **Resolved 403 Forbidden**: Fixed the issue where valid data was fetched but images failed to display due to Spring Security blocking unauthenticated GET requests to the uploads folder.
+- **Kotlin DSL Migration**: Fixed build failures caused by incorrect space-separated tokens in the Gradle configuration.
+
 ## [2026-04-15] - Architectural Overhaul & Feature-Based Modularization
 
 ### 🏗️ Software Architecture

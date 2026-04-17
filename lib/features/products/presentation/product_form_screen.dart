@@ -151,7 +151,10 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           widget.product!.fullImageUrl,
           fit: BoxFit.cover,
           width: double.infinity,
-          errorBuilder: (context, error, stackTrace) => _errorPlaceholder(),
+          errorBuilder: (context, error, stackTrace) {
+            debugPrint("Image Load Error: $error");
+            return _errorPlaceholder();
+          },
         ),
       )
           : const Center(child: Icon(Icons.image_search, size: 50, color: Colors.grey,)),
@@ -178,12 +181,15 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   }
   //display errorplaceholder for image
   Widget _errorPlaceholder(){
-    return const Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(Icons.broken_image, size: 50, color: Colors.grey,),
-        Text('Invalid or No Image Link', style: TextStyle(color: Colors.grey),)
-      ],
+    return SizedBox(
+      width: double.infinity,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.broken_image, size: 50, color: Colors.grey,),
+          Text('Invalid or No Image Link', style: TextStyle(color: Colors.grey),)
+        ],
+      ),
     );
   }
 
@@ -255,11 +261,10 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           icon: Icons.notifications_active_outlined,
           isNumber: true,
           textInputAction: TextInputAction.done, // Last field in this section
-          hint: 'Default is 5',
           validator: AppValidators.combine([
             AppValidators.required(),
             AppValidators.number(),
-            AppValidators.min(1, message: "Threshold must be at least 1"),
+            AppValidators.min(0, message: "Threshold must be at least 0"),
           ]),
         ),
       ],

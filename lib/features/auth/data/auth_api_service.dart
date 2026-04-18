@@ -42,13 +42,15 @@ class AuthApiService {
         }),
       );
 
+      final Map<String, dynamic> data = jsonDecode(response.body);
+
       if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+        return data;
       } else {
-        throw Exception("Registration failed: ${response.body}");
+        throw data['message'] ?? "Registration failed";
       }
     } catch (e) {
-      throw Exception("Connection failed: $e");
+      throw e.toString();
     }
   }
 }

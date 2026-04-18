@@ -12,6 +12,7 @@ class CustomTextField extends StatelessWidget{
   final TextInputAction? textInputAction;
   final String? Function(String?)? validator;
   final ValueChanged<String>? onChanged;
+  final Widget? suffixIcon;
 
   const CustomTextField({
     super.key,
@@ -25,6 +26,7 @@ class CustomTextField extends StatelessWidget{
     this.textInputAction,
     this.validator,
     this.onChanged,
+    this.suffixIcon,
   });
 
   @override
@@ -40,7 +42,8 @@ class CustomTextField extends StatelessWidget{
       decoration: AppTheme.inputDecoration(
           label: label,
           icon: icon,
-          hint: hint),
+          hint: hint,
+      ).copyWith(suffixIcon: suffixIcon),
       validator: validator,
       onChanged: onChanged,
     );

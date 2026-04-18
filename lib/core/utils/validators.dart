@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class AppValidators{
   /// 1. REQUIRED: Checks for null, empty, or just whitespace strings.
   static String? Function(String?) required({String? message}){
@@ -50,6 +52,17 @@ class AppValidators{
       for (final validator in validators) {
         final result = validator(value);
         if (result != null) return result; // Stops at the first error found
+      }
+      return null;
+    };
+  }
+
+  /// 6. MATCH: Ensures two fields have the same value.
+  static String? Function(String?) match(TextEditingController otherController, {String? message}) {
+    return (value) {
+      if (value == null || value.isEmpty) return null;
+      if (value.trim() != otherController.text) {
+        return message ?? 'Passwords do not match';
       }
       return null;
     };

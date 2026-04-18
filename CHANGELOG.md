@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-04-18] - Auth Flow & Error Handling Improvements
+
+### Fixed
+
+- **Backend Error Parsing**: Resolved FormatUnexpected end of input in Flutter by implementing a GlobalExceptionHandler in Spring Boot to return JSON error bodies instead of raw stack traces.
+- **Duplicate User Handling**: Cleaned up SnackBar messages; now explicitly displays "Username already exists" when a SQL UNIQUE constraint is triggered.
+- **Password Validation**: Fixed synchronization issue where passwords occasionally showed "not match" despite being identical. Updated validator to pull live values from TextEditingController.
+- **UI Compiler Error**: Resolved named parameter 'suffixIcon' isn't defined by updating the CustomTextField constructor.
+
+### Added
+
+- **GlobalExceptionHandler**: Centralized backend error handling for RuntimeException and DataIntegrityViolationException.
+- **Dynamic Validation**: Added onChanged triggers to auth fields to provide instant visual feedback on password matching.
+- **Password Toggle**: Integrated suffixIcon support in CustomTextField for visibility toggling.
+
 ## [1.2.0] - 2026-04-17
 
 ### 🏗️ Authentication & Full-Stack Security

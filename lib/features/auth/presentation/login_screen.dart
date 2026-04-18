@@ -16,12 +16,17 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
   bool _isLogin = true;
 
   @override
   void dispose() {
     _usernameController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -85,15 +90,51 @@ class _LoginScreenState extends State<LoginScreen> {
           validator: AppValidators.required(message: "Username is required"),
           textInputAction: TextInputAction.next,
         ),
+
         const SizedBox(height: 16),
+
         CustomTextField(
           controller: _passwordController,
           label: "Password",
           icon: Icons.lock_outline,
-          isPassword: true,
+          isPassword: _obscurePassword,
+          suffixIcon: IconButton(
+            icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+            onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+          ),
+          onChanged: (_){
+            if (!_isLogin && _confirmPasswordController.text.isNotEmpty) {
+              _formKey.currentState!.validate();
+            }
+          },
           validator: AppValidators.required(message: "Password is required"),
-          textInputAction: TextInputAction.done,
+          textInputAction: _isLogin ? TextInputAction.done : TextInputAction.next,
         ),
+
+        // Confirm Password Field (Only shows when _isLogin is false)
+        if (!_isLogin) ...[
+          const SizedBox(height: 16),
+          CustomTextField(
+            controller: _confirmPasswordController,
+            label: "Confirm Password",
+            icon: Icons.lock_reset_outlined,
+            isPassword: _obscureConfirmPassword,
+            suffixIcon: IconButton(
+              icon: Icon(_obscureConfirmPassword ? Icons.visibility_off : Icons.visibility),
+              onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+            ),
+            onChanged: (_){
+              _formKey.currentState!.validate();
+            },
+            validator: AppValidators.combine([
+              AppValidators.required(message: "Please confirm your password"),
+              AppValidators.match(
+                  _passwordController
+              ),
+            ]),
+            textInputAction: TextInputAction.done,
+          ),
+        ],
       ],
     );
   }
@@ -123,7 +164,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _buildToggleModeButton(bool isLoading) {
     return TextButton(
-      onPressed: isLoading ? null : () => setState(() => _isLogin = !_isLogin),
+      onPressed: isLoading ? null : () => setState(() {
+        _isLogin = !_isLogin;
+        _usernameController.clear();
+        _passwordController.clear();
+        _confirmPasswordController.clear();
+        _formKey.currentState?.reset();
+      }),
       child: Text(
         _isLogin ? "Don't have an account? Register" : "Already have an account? Login",
         style: const TextStyle(color: Colors.blueGrey),
@@ -135,15 +182,25 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final authProvider = context.read<AuthProvider>();
-    final success = _isLogin
-        ? await authProvider.login(_usernameController.text.trim(), _passwordController.text)
-        : await authProvider.register(_usernameController.text.trim(), _passwordController.text);
 
-    if (!success && mounted) {
+    final success = _isLogin
+      ? await authProvider.login(
+          _usernameController.text.trim(),
+          _passwordController.text)
+      : await authProvider.register(
+          _usernameController.text.trim(),
+          _passwordController.text
+      );
+
+    if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_isLogin ? 'Invalid credentials' : 'Registration failed'),
-          backgroundColor: Colors.redAccent,
+          content: Text(authProvider.message), // Uses the dynamic message from your provider
+          backgroundColor: success ? Colors.green : Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(10),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          duration: const Duration(seconds: 2),
         ),
       );
     }

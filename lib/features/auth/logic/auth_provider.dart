@@ -12,6 +12,9 @@ class AuthProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _token != null;
 
+  String _message = "";
+  String get message => _message;
+
   // 1. Initial Check: See if a token exists when the app starts
   Future<void> checkAuthStatus() async {
     _token = await _storage.read(key: 'jwt_token');
@@ -21,6 +24,7 @@ class AuthProvider with ChangeNotifier {
   // 2. Login Logic
   Future<bool> login(String username, String password) async {
     _isLoading = true;
+    _message = "";
     notifyListeners();
 
     try {
@@ -30,10 +34,12 @@ class AuthProvider with ChangeNotifier {
       // Save token securely
       await _storage.write(key: 'jwt_token', value: _token);
 
+      _message = "Welcome back, $username!";
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
+      _message = "Login failed: Incorrect username or password.";
       _isLoading = false;
       notifyListeners();
       debugPrint("Login Error: $e");
@@ -44,6 +50,7 @@ class AuthProvider with ChangeNotifier {
   // 3. Register Logic
   Future<bool> register(String username, String password) async {
     _isLoading = true;
+    _message = "";
     notifyListeners();
 
     try {
@@ -51,11 +58,14 @@ class AuthProvider with ChangeNotifier {
       _token = data['token'];
       await _storage.write(key: 'jwt_token', value: _token);
 
+      _message = "Account created successfully!";
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
       _isLoading = false;
+
+      _message = e.toString().replaceAll("Exception: ", "");
       notifyListeners();
       return false;
     }

@@ -3,20 +3,20 @@ import 'package:ecommerce/features/categories/presentation/category_manager_scre
 import 'package:ecommerce/features/categories/logic/category_provider.dart';
 
 import '../../auth/logic/auth_provider.dart';
-import 'product_form_screen.dart';
+import 'admin_product_form_screen.dart';
 import 'package:flutter/material.dart';
 import '../logic/product_provider.dart';
 import 'package:provider/provider.dart';
-import '../../../core/widgets/product_card.dart';
+import 'widgets/admin_product_card.dart';
 
-class ProductListScreen extends StatefulWidget{
-  const ProductListScreen({super.key});
+class AdminDashboardScreen extends StatefulWidget{
+  const AdminDashboardScreen({super.key});
 
   @override
-  State<ProductListScreen> createState()=>_ProductListScreenState();
+  State<AdminDashboardScreen> createState()=>_AdminDashboardScreenState();
 }
 
-class _ProductListScreenState extends State<ProductListScreen> {
+class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
 
@@ -26,8 +26,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
     // Fetch data immediately when screen loads
     Future.microtask(() {
       if(mounted){
-      Provider.of<ProductProvider>(context, listen: false).fetchProducts();
-      Provider.of<CategoryProvider>(context, listen: false).fetchCategories();
+        // 1. Get the AuthProvider instance
+        final auth = Provider.of<AuthProvider>(context, listen: false);
+
+        // 2. Pass it to fetchProducts to handle potential 403 errors
+        Provider.of<ProductProvider>(context, listen: false).fetchProducts(auth);
+        Provider.of<CategoryProvider>(context, listen: false).fetchCategories();
       }
     });
 
@@ -52,7 +56,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
         onRefresh: () =>
             Provider
                 .of<ProductProvider>(context, listen: false)
-                .fetchProducts(),
+                .fetchProducts(context.read<AuthProvider>()),
         child: Column(
           children: [
             _buildDashboard(), // Summary cards
@@ -223,7 +227,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
             padding: const EdgeInsets.all(16),
             itemCount: filteredList.length,
             itemBuilder: (context, index) =>
-                ProductCard(
+                AdminProductCard(
                   key: ValueKey(filteredList[index].id),
                   product: filteredList[index],
                 ),
@@ -252,7 +256,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
       onPressed: () =>
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const ProductFormScreen()),
+            MaterialPageRoute(builder: (context) => const AdminProductFormScreen()),
           ),
       label: const Text('Add Product'),
       icon: const Icon(Icons.add),

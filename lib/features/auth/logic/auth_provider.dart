@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../data/auth_api_service.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 class AuthProvider with ChangeNotifier {
   final AuthApiService _apiService = AuthApiService();
@@ -17,7 +18,16 @@ class AuthProvider with ChangeNotifier {
 
   // 1. Initial Check: See if a token exists when the app starts
   Future<void> checkAuthStatus() async {
-    _token = await _storage.read(key: 'jwt_token');
+    final storedToken = await _storage.read(key: 'jwt_token');
+
+    if (storedToken != null) {
+      // Check if the token is still valid before setting it
+      if (JwtDecoder.isExpired(storedToken)) {
+        await logout(); // Wipe the expired token
+      } else {
+        _token = storedToken;
+      }
+    }
     notifyListeners();
   }
 
@@ -39,10 +49,10 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _message = "Login failed: Incorrect username or password.";
+      // Use the error from the backend (e.g., "User not found" or "Invalid credentials")
+      _message = e.toString().replaceAll("Exception: ", "");
       _isLoading = false;
       notifyListeners();
-      debugPrint("Login Error: $e");
       return false;
     }
   }
@@ -76,5 +86,16 @@ class AuthProvider with ChangeNotifier {
     await _storage.delete(key: 'jwt_token');
     _token = null;
     notifyListeners();
+  }
+
+  bool get isAdmin{
+    if (_token == null) return false;
+    try {
+      Map<String, dynamic> decodedToken = JwtDecoder.decode(_token!);
+      // This matches the 'role' key you set in JwtService.java
+      return decodedToken['role'] == 'ADMIN';
+    } catch (e) {
+      return false;
+    }
   }
 }

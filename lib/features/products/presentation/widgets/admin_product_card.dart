@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../features/products/data/Product.dart';
-import '../../features/products/presentation/product_form_screen.dart';
+import '../../data/Product.dart';
+import '../admin_product_form_screen.dart';
 
-class ProductCard extends StatelessWidget{
+class AdminProductCard extends StatelessWidget{
   final Product product;
 
-  const ProductCard({super.key, required this.product});
+  const AdminProductCard({super.key, required this.product});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +16,7 @@ class ProductCard extends StatelessWidget{
       child: InkWell(
         onTap: () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => ProductFormScreen(product: product,)),
+          MaterialPageRoute(builder: (context) => AdminProductFormScreen(product: product,)),
         ),
         child: Padding(
           padding: const EdgeInsets.all(12.0),

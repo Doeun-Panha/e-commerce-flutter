@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-04-19] - Role-Based Access Control & User Storefront
+
+### Added
+- **User Storefront**: Implemented `UserStorefrontScreen` and `UserProductCard` to provide a dedicated customer-facing shopping interface.
+- **JWT Role Decoding**: Integrated `jwt_decoder` to extract user roles (`ADMIN` vs `USER`) directly from the session token.
+- **Role-Based Routing**: Updated `main.dart` to automatically redirect users to either the Admin Dashboard or the User Storefront based on their credentials.
+
+### Changed
+- **Modular Component Design**: Renamed legacy `ProductCard` to `AdminProductCard` to support a multi-role UI architecture.
+- **Clean Architecture**: Refactored `ProductProvider` and `main.dart` to better handle session state and role-specific data fetching.
+
+### Dependencies
+- Added `jwt_decoder: ^2.0.1` for token payload analysis.
+
+|                         Outcomes                          |
+|:---------------------------------------------------------:|
+| ![User Store Front Screen](docs/userStoreFrontScreen.png) |
+
+
 ## [2026-04-18] - Auth Flow & Error Handling Improvements
 
 ### Fixed

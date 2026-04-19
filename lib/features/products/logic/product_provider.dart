@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import '../../auth/logic/auth_provider.dart';
 import '../data/Product.dart';
 import '../data/product_api_service.dart';
 
@@ -18,14 +19,24 @@ class ProductProvider with ChangeNotifier{
   String _selectedFilter = 'All';
   String get selectedFilter => _selectedFilter;
 
+  AuthProvider? _authProvider;
+
+  void updateAuth(AuthProvider auth) {
+    _authProvider = auth;
+  }
+
   //Fetch all products
-  Future<void> fetchProducts() async {
+  Future<void> fetchProducts(AuthProvider authProvider) async {
     _isLoading = true;
     notifyListeners();
     try{
       _products=await _apiService.getProducts();
     }catch(e){
       debugPrint("Load Products Error: $e");
+      if (e.toString().contains('403')) {
+        // If the token is dead, force a logout to reset the app state
+        await _authProvider?.logout();
+      }
     }finally{
       _isLoading = false;
       notifyListeners();

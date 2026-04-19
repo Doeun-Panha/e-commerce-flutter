@@ -10,16 +10,16 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/validators.dart';
 import '../../../core/widgets/custom_text_field.dart';
 
-class ProductFormScreen extends StatefulWidget {
+class AdminProductFormScreen extends StatefulWidget {
   final Product? product;
 
-  const ProductFormScreen({super.key, this.product});
+  const AdminProductFormScreen({super.key, this.product});
 
   @override
-  State<ProductFormScreen> createState() => _ProductFormScreenState();
+  State<AdminProductFormScreen> createState() => _AdminProductFormScreenState();
 }
 
-class _ProductFormScreenState extends State<ProductFormScreen> {
+class _AdminProductFormScreenState extends State<AdminProductFormScreen> {
   //global key
   final _formKey = GlobalKey<FormState>();
 

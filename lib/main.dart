@@ -2,12 +2,13 @@ import 'dart:io';
 
 import 'package:ecommerce/features/categories/logic/category_provider.dart';
 import 'package:ecommerce/features/products/logic/product_provider.dart';
-import 'package:ecommerce/features/products/presentation/product_list_screen.dart';
+import 'package:ecommerce/features/products/presentation/admin_dashboard_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'features/auth/logic/auth_provider.dart';
 import 'features/auth/presentation/login_screen.dart';
+import 'features/products/presentation/user_storefront_screen.dart';
 
 class DevHttpOverrides extends HttpOverrides {
   @override
@@ -45,11 +46,13 @@ class MyApp extends StatelessWidget {
       ),
       home:Consumer<AuthProvider>(
         builder: (context, auth, _) {
-          if (auth.isAuthenticated) {
-            return const ProductListScreen();
+          if (!auth.isAuthenticated) {
+            return const LoginScreen();
           }
           // We will create LoginScreen next!
-          return const LoginScreen();
+          return auth.isAdmin
+            ? const AdminDashboardScreen()
+            : const UserStorefrontScreen();
         },
       ),
     );

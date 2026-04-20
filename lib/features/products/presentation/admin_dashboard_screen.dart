@@ -73,12 +73,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
+      // Logout Button
+      leading: IconButton(
+        onPressed: () => _showLogoutDialog(context),
+        icon: const Icon(Icons.login_rounded, color: Colors.redAccent,),
+        tooltip: "Logout",
+      ),
       title: const Text(
           'Product Inventory', style: TextStyle(fontWeight: FontWeight.bold)),
       backgroundColor: Theme
           .of(context)
           .colorScheme
           .primaryContainer,
+      centerTitle: true,
       actions: [
         // Category Manager Button
         IconButton(
@@ -89,12 +96,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     builder: (context) => const CategoryManagerScreen()),
               ),
           icon: const Icon(Icons.category_outlined),
-        ),
-        // Logout Button
-        IconButton(
-          onPressed: () => _showLogoutDialog(context),
-          icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
-          tooltip: "Logout",
         ),
       ],
     );

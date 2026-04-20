@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-04-20] - Product Filtering, Search & UI Polish
+
+### Added
+- **Global Search**: Implemented real-time product search in both `AdminDashboardScreen` and `UserStorefrontScreen`.
+- **Category Filtering**: Added interactive `FilterChip` components to allow users and admins to filter products by category dynamically.
+- **Improved Logout Flow**: Integrated centralized logout buttons with confirmation dialogs across all dashboards.
+- **Dashboard Shortcuts**: Implemented interactive "Low Stock" and "In Stock" cards that act as quick-filters for the inventory list.
+
+### Changed
+- **Unified Data Loading**: Standardized `initState` to fetch both products and categories simultaneously, ensuring immediate availability of filtering options.
+- **Enhanced Storefront UI**: Optimized `UserStorefrontScreen` with a cleaner AppBar including search and shopping bag icons.
+
+
 ## [2026-04-19] - Role-Based Access Control & User Storefront
 
 ### Added

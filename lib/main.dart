@@ -1,14 +1,17 @@
 import 'dart:io';
 
 import 'package:ecommerce/features/categories/logic/category_provider.dart';
+import 'package:ecommerce/features/products/logic/cart_provider.dart';
 import 'package:ecommerce/features/products/logic/product_provider.dart';
-import 'package:ecommerce/features/products/presentation/admin_dashboard_screen.dart';
+import 'package:ecommerce/features/products/presentation/admin/admin_dashboard_screen.dart';
+import 'package:ecommerce/features/products/presentation/user/start_up_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'core/theme/app_theme.dart';
 import 'features/auth/logic/auth_provider.dart';
 import 'features/auth/presentation/login_screen.dart';
-import 'features/products/presentation/user_storefront_screen.dart';
+import 'features/products/presentation/user/user_storefront_screen.dart';
 
 class DevHttpOverrides extends HttpOverrides {
   @override
@@ -26,6 +29,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => AuthProvider()..checkAuthStatus(),),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
+        ChangeNotifierProvider(create: (_) => CartProvider()),
       ],
       child: const MyApp(),
     ),
@@ -40,16 +44,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'E-commerce Admin',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.lightTheme,
       home:Consumer<AuthProvider>(
         builder: (context, auth, _) {
           if (!auth.isAuthenticated) {
-            return const LoginScreen();
+            return const StartUpScreen();
           }
-          // We will create LoginScreen next!
           return auth.isAdmin
             ? const AdminDashboardScreen()
             : const UserStorefrontScreen();

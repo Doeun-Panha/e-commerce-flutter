@@ -1,7 +1,10 @@
+import 'package:ecommerce/features/products/presentation/user/cart_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
 import '../../data/Product.dart';
+import '../../logic/cart_provider.dart';
+import '../user/product_detail_screen.dart';
 
 class UserProductCard extends StatelessWidget {
   final Product product;
@@ -15,7 +18,12 @@ class UserProductCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           onTap: () {
-            // TODO: Navigate to ProductDetailScreen(product: product)
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProductDetailScreen(product: product),
+              ),
+            );
           },
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -29,27 +37,29 @@ class UserProductCard extends StatelessWidget {
     );
   }
 
-  // --- Sub-widgets ---
+  // --- UI Sections ---
 
   Widget _buildImageSection() {
     return Expanded(
       child: Stack(
         children: [
-          Image.network(
-            product.fullImageUrl, // Use full URL helper from your model
-            fit: BoxFit.cover,
-            width: double.infinity,
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) return child;
-              return Container(
-                color: Colors.grey[100],
-                child: const Center(child: CupertinoActivityIndicator()),
-              );
-            },
-            errorBuilder: (context, _, __) => _imagePlaceholder(),
+          Hero(
+            tag: 'product_image_${product.id}',
+            child: Image.network(
+              product.fullImageUrl,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Container(
+                  color: Colors.grey[100],
+                  child: const Center(child: CupertinoActivityIndicator()),
+                );
+              },
+              errorBuilder: (context, _, __) => _imagePlaceholder(),
+            ),
           ),
-          if (product.stockQuantity <= product.lowStockThreshold)
-            _buildLowStockBadge(),
+          _buildStatusBadge(),
         ],
       ),
     );
@@ -79,7 +89,7 @@ class UserProductCard extends StatelessWidget {
                     fontSize: 16
                 ),
               ),
-              _buildAddToCartButton(),
+              _buildAddToCartButton(context),
             ],
           ),
         ],
@@ -88,6 +98,80 @@ class UserProductCard extends StatelessWidget {
   }
 
   // --- UI Helpers ---
+
+  Widget _buildStatusBadge() {
+    final bool isOutOfStock = product.stockQuantity <= 0;
+    final bool isLowStock = product.stockQuantity <= product.lowStockThreshold;
+
+    if (!isLowStock && !isOutOfStock) return const SizedBox.shrink();
+
+    return Positioned(
+      top: 10,
+      left: 10,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: isOutOfStock ? Colors.black.withOpacity(0.7) : Colors.orangeAccent.withOpacity(0.9),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Text(
+          isOutOfStock ? "OUT OF STOCK" : "LIMITED",
+          style: const TextStyle(
+              color: Colors.white,
+              fontSize: 9,
+              fontWeight: FontWeight.w900
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAddToCartButton(BuildContext context) {
+    final bool isOutOfStock = product.stockQuantity <= 0;
+
+    return InkWell(
+      onTap: isOutOfStock
+          ? null // Disable interaction if no stock
+          : () => _handleAddToCart(context),
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isOutOfStock ? Colors.grey[300] : Colors.black,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(
+            isOutOfStock ? Icons.block : Icons.add_shopping_cart,
+            size: 18,
+            color: isOutOfStock ? Colors.grey[600] : Colors.white
+        ),
+      ),
+    );
+  }
+
+  void _handleAddToCart(BuildContext context) {
+    context.read<CartProvider>().addItem(product);
+
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("${product.name} added to cart!"),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+        backgroundColor: Colors.black87,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        action: SnackBarAction(
+          label: "VIEW",
+          textColor: Colors.purpleAccent,
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context)=> const CartScreen()),
+            );
+          },
+        ),
+      ),
+    );
+  }
 
   BoxDecoration _cardDecoration() {
     return BoxDecoration(
@@ -108,35 +192,6 @@ class UserProductCard extends StatelessWidget {
       color: Colors.grey[200],
       width: double.infinity,
       child: const Icon(Icons.fitness_center, color: Colors.grey, size: 40),
-    );
-  }
-
-  Widget _buildLowStockBadge() {
-    return Positioned(
-      top: 10,
-      left: 10,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: Colors.orangeAccent.withOpacity(0.9),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: const Text(
-          "LIMITED",
-          style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w900),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAddToCartButton() {
-    return Container(
-      padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        color: Colors.black,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: const Icon(Icons.add_shopping_cart, size: 18, color: Colors.white),
     );
   }
 }

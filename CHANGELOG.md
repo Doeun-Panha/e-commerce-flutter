@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-05-08] - Shopping Cart, Product Details & UI Refactor
+
+### Added
+- **Shopping Cart Implementation**: Added `CartProvider` for persistent shopping cart state and `CartScreen` for the user checkout experience.
+- **Product Details Screen**: Developed `ProductDetailScreen` to provide comprehensive product information and "Add to Cart" functionality.
+- **Enhanced Startup Experience**: Introduced `StartUpScreen` with an onboarding illustration and streamlined login/registration navigation.
+- **Custom UI Components**: Created a reusable `CustomButton` widget to ensure design consistency across the application.
+
+### Changed
+- **Directory Reorganization**: Refactored the `presentation` layer to separate `admin` and `user` features into dedicated subdirectories.
+- **UI Symmetry**: Updated `AdminProductCard` and `UserProductCard` with improved layouts and interactive elements.
+- **Architecture Updates**: Integrated `CartProvider` and `HttpOverrides` into `main.dart` to support new features and development workflows.
+
+### Dependencies
+- Added `cached_network_image: ^3.3.0` for optimized image loading.
+- Added `flutter_secure_storage: ^9.0.0` for future secure data persistence.
+
+### Assets
+- Added `assets/images/illustration.jpg` for the startup screen visual.
+
 ## [2026-04-20] - Product Filtering, Search & UI Polish
 
 ### Added

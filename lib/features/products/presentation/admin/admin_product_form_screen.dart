@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:ecommerce/features/products/data/Product.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import '../../categories/data/Category.dart';
-import '../../categories/logic/category_provider.dart';
-import '../logic/product_provider.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../../core/utils/validators.dart';
-import '../../../core/widgets/custom_text_field.dart';
+
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/validators.dart';
+import '../../../../core/widgets/custom_text_field.dart';
+import '../../../categories/data/Category.dart';
+import '../../../categories/logic/category_provider.dart';
+import '../../logic/product_provider.dart';
 
 class AdminProductFormScreen extends StatefulWidget {
   final Product? product;

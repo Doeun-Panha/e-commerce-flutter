@@ -2,8 +2,11 @@ import 'package:ecommerce/features/categories/logic/category_provider.dart';
 import 'package:ecommerce/features/products/presentation/widgets/user_product_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../logic/product_provider.dart';
-import '../../auth/logic/auth_provider.dart';
+
+import '../../../auth/logic/auth_provider.dart';
+import '../../logic/cart_provider.dart';
+import '../../logic/product_provider.dart';
+import 'cart_screen.dart';
 
 class UserStorefrontScreen extends StatefulWidget {
   const UserStorefrontScreen({super.key});
@@ -150,10 +153,34 @@ class _UserStorefrontScreenState extends State<UserStorefrontScreen> {
       ),
       title: const Text(
           "E-commerce",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, letterSpacing: 1.2)
+          style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.2
+          )
       ),
       actions: [
-        IconButton(icon: const Icon(Icons.shopping_bag_outlined, color: Colors.black), onPressed: () {}),
+        Consumer<CartProvider>(
+          builder: (context, cart, child) {
+            return Padding(
+              padding: const EdgeInsets.only(right: 8.0, top: 8.0),
+              child: Badge(
+                label: Text(cart.itemCount.toString()),
+                isLabelVisible: cart.itemCount > 0,
+                backgroundColor: Colors.purpleAccent,
+                child: IconButton(
+                  icon: const Icon(Icons.shopping_bag_outlined, color: Colors.black),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const CartScreen()),
+                    );
+                  },
+                ),
+              ),
+            );
+          },
+        ),
       ],
     );
   }

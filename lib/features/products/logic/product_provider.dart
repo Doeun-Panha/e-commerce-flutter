@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import '../../auth/logic/auth_provider.dart';
-import '../data/Product.dart';
+import '../../../core/models/product.dart';
 import '../data/product_api_service.dart';
 
 class ProductProvider with ChangeNotifier{

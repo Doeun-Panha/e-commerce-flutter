@@ -2,7 +2,7 @@ import 'package:ecommerce/features/categories/data/category_api_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart' hide Category;
 
-import '../data/Category.dart';
+import '../../../core/models/category.dart';
 
 class CategoryProvider with ChangeNotifier{
   final CategoryApiService _apiService = CategoryApiService();

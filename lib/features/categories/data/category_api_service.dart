@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../../../core/constants/api_constants.dart';
-import 'Category.dart';
+import '../../../core/api/api_constants.dart';
+import '../../../core/models/category.dart';
 
 class CategoryApiService {
   final _storage = const FlutterSecureStorage();

@@ -1,15 +1,15 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:ecommerce/features/products/data/Product.dart';
+import 'package:ecommerce/core/models/product.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/validators.dart';
-import '../../../../core/widgets/custom_text_field.dart';
-import '../../../categories/data/Category.dart';
+import '../../../../shared/widgets/custom_text_field.dart';
+import '../../../../core/models/category.dart';
 import '../../../categories/logic/category_provider.dart';
-import '../../logic/product_provider.dart';
+import '../../../products/logic/product_provider.dart';
 
 class AdminProductFormScreen extends StatefulWidget {
   final Product? product;

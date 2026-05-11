@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../data/Product.dart';
-import '../admin/admin_product_form_screen.dart';
+import '../../../../core/models/product.dart';
+import '../screens/admin_product_form_screen.dart';
 
 class AdminProductCard extends StatelessWidget{
   final Product product;

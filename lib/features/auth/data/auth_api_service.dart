@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../../../core/constants/api_constants.dart';
+import '../../../core/api/api_constants.dart';
 
 class AuthApiService {
   final String _authUrl = "${ApiConstants.baseUrl}/auth";

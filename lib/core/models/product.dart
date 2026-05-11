@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart' hide Category;
-import '../../../core/constants/api_constants.dart';
-import '../../categories/data/Category.dart';
+import '../api/api_constants.dart';
+import 'category.dart';
 
 class Product {
   final int id;

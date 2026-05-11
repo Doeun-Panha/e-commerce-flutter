@@ -1,4 +1,3 @@
-import 'package:ecommerce/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class CustomButton extends StatelessWidget{
@@ -33,7 +32,7 @@ class CustomButton extends StatelessWidget{
           ),
           child: Text(
             text,
-            style: TextStyle(color : textColor, fontWeight: FontWeight.bold),
+            style: TextStyle(fontWeight: FontWeight.bold),
           )),
     );
   }

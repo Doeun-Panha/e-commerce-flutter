@@ -1,10 +1,10 @@
 import 'package:ecommerce/core/theme/app_theme.dart';
-import 'package:ecommerce/features/categories/presentation/category_manager_screen.dart';
+import 'package:ecommerce/features/admin/presentation/screens/category_manager_screen.dart';
 import 'package:ecommerce/features/categories/logic/category_provider.dart';
 
 import '../../../auth/logic/auth_provider.dart';
 import 'package:flutter/material.dart';
-import '../../logic/product_provider.dart';
+import '../../../products/logic/product_provider.dart';
 import 'package:provider/provider.dart';
 import '../widgets/admin_product_card.dart';
 import 'admin_product_form_screen.dart';

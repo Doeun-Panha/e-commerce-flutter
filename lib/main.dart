@@ -1,17 +1,14 @@
 import 'dart:io';
 
+import 'package:ecommerce/core/navigation/app_router.dart';
 import 'package:ecommerce/features/categories/logic/category_provider.dart';
 import 'package:ecommerce/features/products/logic/cart_provider.dart';
 import 'package:ecommerce/features/products/logic/product_provider.dart';
-import 'package:ecommerce/features/products/presentation/admin/admin_dashboard_screen.dart';
-import 'package:ecommerce/features/products/presentation/user/start_up_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'core/theme/app_theme.dart';
 import 'features/auth/logic/auth_provider.dart';
-import 'features/auth/presentation/login_screen.dart';
-import 'features/products/presentation/user/user_storefront_screen.dart';
 
 class DevHttpOverrides extends HttpOverrides {
   @override
@@ -41,20 +38,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    final authProvider = context.read<AuthProvider>();
+    final router = AppRouter.createRouter(authProvider);
+
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      title: 'E-commerce Admin',
+      title: 'E-Commerce',
       theme: AppTheme.lightTheme,
-      home:Consumer<AuthProvider>(
-        builder: (context, auth, _) {
-          if (!auth.isAuthenticated) {
-            return const StartUpScreen();
-          }
-          return auth.isAdmin
-            ? const AdminDashboardScreen()
-            : const UserStorefrontScreen();
-        },
-      ),
+      routerConfig: router,
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   static const double borderRadius = 12.0;
+  static const double buttonBorderRadius = 16.0;
   static const double buttonContainerBorderRadius = 24.0;
 
   static ThemeData lightTheme = ThemeData(
@@ -19,11 +20,12 @@ class AppTheme {
     textTheme: TextTheme(
       headlineLarge: TextStyle(
         fontSize:  28,
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w900,
         color: const Color(0xFF5EACFF),
       ),
       bodyMedium: TextStyle(
-        fontSize: 20,
+        fontSize: 24,
+        fontWeight: FontWeight.w700,
         color: Color(0xFF616161)
       )
     ),
@@ -33,7 +35,7 @@ class AppTheme {
         elevation: 0,
         minimumSize: const Size(double.infinity, 40),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(buttonBorderRadius),
         ),
         backgroundColor: const Color(0xFFF5F5F5),
         foregroundColor: const Color(0xFF616161),

@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Add this
-import '../../../core/constants/api_constants.dart';
-import 'Product.dart';
+import '../../../core/api/api_constants.dart';
+import '../../../core/models/product.dart';
 
 class ProductApiService {
   final _storage = const FlutterSecureStorage();

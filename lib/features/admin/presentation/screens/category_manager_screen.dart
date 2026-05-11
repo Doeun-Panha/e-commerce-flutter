@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../data/Category.dart';
-import '../logic/category_provider.dart';
-import '../../products/logic/product_provider.dart';
+import '../../../../core/models/category.dart';
+import '../../../categories/logic/category_provider.dart';
+import '../../../products/logic/product_provider.dart';
 
 class CategoryManagerScreen extends StatelessWidget {
   const CategoryManagerScreen({super.key});

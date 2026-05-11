@@ -1,10 +1,10 @@
-import 'package:ecommerce/features/products/presentation/user/cart_screen.dart';
+import 'package:ecommerce/features/user/presentation/screens/cart_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../data/Product.dart';
-import '../../logic/cart_provider.dart';
-import '../user/product_detail_screen.dart';
+import '../../../../core/models/product.dart';
+import '../../../products/logic/cart_provider.dart';
+import '../screens/product_detail_screen.dart';
 
 class UserProductCard extends StatelessWidget {
   final Product product;

@@ -1,11 +1,11 @@
 import 'package:ecommerce/features/categories/logic/category_provider.dart';
-import 'package:ecommerce/features/products/presentation/widgets/user_product_card.dart';
+import 'package:ecommerce/features/user/presentation/widgets/user_product_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../auth/logic/auth_provider.dart';
-import '../../logic/cart_provider.dart';
-import '../../logic/product_provider.dart';
+import '../../../products/logic/cart_provider.dart';
+import '../../../products/logic/product_provider.dart';
 import 'cart_screen.dart';
 
 class UserStorefrontScreen extends StatefulWidget {
